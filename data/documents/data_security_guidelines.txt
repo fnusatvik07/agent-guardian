@@ -1,0 +1,50 @@
+Data Security and Privacy Guidelines
+
+This document outlines mandatory security requirements for all employees handling company and customer data.
+
+DATA CLASSIFICATION:
+- Public: Marketing materials, job postings, press releases
+- Internal: Company policies, org charts, internal communications  
+- Confidential: Customer data, financial records, strategic plans
+- Restricted: Employee PII, legal documents, security procedures
+
+ACCESS CONTROLS:
+- Multi-factor authentication required for all systems
+- Role-based access - minimum necessary permissions
+- Annual access reviews and recertification
+- Immediate access revocation upon role change or termination
+
+CUSTOMER DATA PROTECTION:
+- Customer PII requires explicit authorization to access
+- No customer data on personal devices or cloud storage
+- Encrypt all customer data in transit and at rest
+- Report data incidents within 1 hour to security@company.com
+
+EMPLOYEE RESPONSIBILITIES:
+- Complete security training within 30 days of hire
+- Quarterly security awareness training mandatory
+- Use company-approved software and cloud services only
+- Report suspicious emails or security incidents immediately
+
+INCIDENT RESPONSE:
+- Suspected breaches: Call security hotline 1-800-SEC-HELP
+- Email incidents: Forward to security@company.com
+- Document all security events in incident tracking system
+- Cooperate fully with security investigations
+
+COMPLIANCE REQUIREMENTS:
+- SOC 2 Type II compliance for customer data handling
+- GDPR compliance for EU customer data
+- Regular third-party security audits
+- Quarterly vulnerability assessments
+
+VIOLATIONS AND ENFORCEMENT:
+- Security policy violations may result in disciplinary action
+- Intentional data breaches subject to immediate termination
+- Criminal violations reported to law enforcement
+- Regular monitoring and audit of data access
+
+For security questions or to report incidents:
+- Emergency: 1-800-SEC-HELP
+- Email: security@company.com  
+- Internal: Extension 9911

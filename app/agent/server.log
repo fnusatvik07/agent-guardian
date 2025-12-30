@@ -1,0 +1,5 @@
+   Building governance-agent @ file:///Users/fnu.satvik/dev/github.com/satvik/governance_agent
+      Built governance-agent @ file:///Users/fnu.satvik/dev/github.com/satvik/governance_agent
+Uninstalled 1 package in 0.90ms
+Installed 1 package in 1ms
+/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/bin/python3: can't open file '/Users/fnu.satvik/dev/github.com/satvik/governance_agent/app/agent/main.py': [Errno 2] No such file or directory

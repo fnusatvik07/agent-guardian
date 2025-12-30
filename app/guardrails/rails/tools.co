@@ -1,0 +1,281 @@
+# Tool Rails - Validates tool usage and protects against tool injection/misuse
+# Ensures proper authorization and safe tool execution
+
+define flow validate tool access $tool_name $user
+    """Validate user has permission to use the requested tool"""
+    
+    # Admin-only tools
+    if $tool_name in ["get_user_profile", "query_database", "access_sensitive_docs"]
+        if $user.role != "admin"
+            bot refuse tool access due to insufficient privileges
+            stop
+    
+    # Employee tools (available to all)
+    if $tool_name in ["search_internal_kb", "create_ticket", "web_search"]
+        # All users can access these tools
+        continue
+    
+    # Department-specific tools
+    if $tool_name == "hr_system_access"
+        if $user.department != "hr"
+            bot refuse tool access due to department restrictions
+            stop
+    
+    if $tool_name == "financial_reports"
+        if $user.department not in ["finance", "accounting"] and $user.role != "admin"
+            bot refuse tool access due to department restrictions
+            stop
+
+define flow validate tool arguments $tool_name $args
+    """Validate tool arguments for safety and compliance"""
+    
+    # Database query validation
+    if $tool_name == "query_database"
+        $query = $args.query.lower()
+        
+        # Block dangerous SQL operations
+        if $query contains "drop " or $query contains "delete " or $query contains "update " or $query contains "insert "
+            bot refuse dangerous database operation
+            stop
+            
+        # Block access to sensitive tables
+        if $query contains "salary" or $query contains "ssn" or $query contains "credit_card"
+            if $user.role != "admin"
+                bot refuse access to sensitive data
+                stop
+                
+        # Ensure SELECT only queries
+        if not $query.strip().startswith("select")
+            bot refuse non select database operation
+            stop
+    
+    # User profile access validation
+    if $tool_name == "get_user_profile"
+        $target_user_id = $args.user_id
+        
+        # Prevent access to admin profiles by non-admins
+        if $target_user_id.startswith("admin_") and $user.role != "admin"
+            bot refuse admin profile access
+            stop
+            
+        # Log profile access attempts
+        log profile access attempt $user.user_id $target_user_id
+    
+    # Search query validation
+    if $tool_name in ["search_internal_kb", "web_search"]
+        $query = $args.query.lower()
+        
+        # Block searches for sensitive information
+        if $query contains "password" or $query contains "api key" or $query contains "secret"
+            bot refuse search for credentials
+            stop
+            
+        # Block attempts to search for other users' private data
+        if $query contains "personal information" or $query contains "private data"
+            if $user.role != "admin"
+                bot refuse search for private data
+                stop
+    
+    # Ticket creation validation
+    if $tool_name == "create_ticket"
+        $title = $args.title.lower()
+        $description = $args.description.lower()
+        
+        # Check for PII in ticket content
+        if $title contains pii_pattern or $description contains pii_pattern
+            bot warn about pii in ticket
+            # Continue but log the warning
+            
+        # Check for security incident indicators
+        if $description contains "breach" or $description contains "hack" or $description contains "unauthorized access"
+            $args.severity = "critical"
+            log security incident ticket $user.user_id
+
+define flow prevent tool injection $tool_args
+    """Prevent tool injection attacks through crafted arguments"""
+    
+    # Check for command injection patterns
+    for $arg_value in $tool_args.values()
+        if $arg_value contains "; " or $arg_value contains "&& " or $arg_value contains "| "
+            bot refuse due to potential command injection
+            stop
+            
+        # Check for SQL injection patterns
+        if $arg_value contains "'; " or $arg_value contains "UNION " or $arg_value contains "DROP "
+            bot refuse due to potential sql injection
+            stop
+            
+        # Check for script injection
+        if $arg_value contains "<script" or $arg_value contains "javascript:"
+            bot refuse due to potential script injection
+            stop
+
+define flow validate tool chain $tools_sequence
+    """Validate sequences of tool calls for suspicious patterns"""
+    
+    # Detect privilege escalation attempts
+    $has_user_query = false
+    $has_admin_tool = false
+    
+    for $tool in $tools_sequence
+        if $tool.name == "get_user_profile"
+            $has_user_query = true
+        if $tool.name in ["query_database", "access_sensitive_docs"]
+            $has_admin_tool = true
+    
+    # Flag suspicious pattern: user query followed by admin tool
+    if $has_user_query and $has_admin_tool
+        if $user.role != "admin"
+            log suspicious tool sequence $user.user_id $tools_sequence
+            bot warn about suspicious activity
+    
+    # Detect data exfiltration patterns
+    $search_count = 0
+    $export_count = 0
+    
+    for $tool in $tools_sequence
+        if $tool.name in ["search_internal_kb", "web_search", "query_database"]
+            $search_count += 1
+        if $tool.name in ["create_ticket", "export_data"]
+            $export_count += 1
+    
+    # Flag excessive search followed by export
+    if $search_count > 5 and $export_count > 0
+        log potential data exfiltration $user.user_id
+        bot limit tool usage due to suspicious pattern
+
+define flow audit tool usage $tool_name $args $result
+    """Audit all tool usage for compliance and security monitoring"""
+    
+    # Log tool usage
+    log tool usage $user.user_id $tool_name $args.keys() $result.success
+    
+    # Special auditing for sensitive operations
+    if $tool_name == "query_database"
+        log database access $user.user_id $args.query $result.row_count
+        
+    if $tool_name == "get_user_profile"
+        log profile access $user.user_id $args.user_id $result.success
+        
+    # Alert on failed security checks
+    if not $result.success and $result.error contains "permission"
+        alert security violation $user.user_id $tool_name "access denied"
+        
+    # Track usage patterns
+    increment user tool usage count $user.user_id $tool_name
+    
+    # Rate limiting checks
+    if get user tool usage count $user.user_id $tool_name > tool_rate_limit($tool_name)
+        bot enforce rate limiting $tool_name
+        stop
+
+define flow sanitize tool results $tool_name $result $user
+    """Sanitize tool results based on user permissions and data sensitivity"""
+    
+    # Sanitize database query results
+    if $tool_name == "query_database"
+        if $user.role != "admin"
+            # Remove sensitive columns
+            for $row in $result.data
+                if "salary" in $row
+                    $row.salary = "[REDACTED]"
+                if "ssn" in $row
+                    $row.ssn = "[REDACTED]"
+                if "personal_phone" in $row
+                    $row.personal_phone = "[REDACTED]"
+    
+    # Sanitize user profile results
+    if $tool_name == "get_user_profile"
+        if $user.role == "employee"
+            # Remove sensitive profile fields
+            $result.data.remove("salary")
+            $result.data.remove("performance_reviews")
+            $result.data.remove("disciplinary_actions")
+    
+    # Sanitize search results
+    if $tool_name in ["search_internal_kb", "web_search"]
+        for $item in $result.data
+            # Remove documents marked as confidential
+            if $item.classification == "confidential" and $user.role != "admin"
+                $result.data.remove($item)
+                
+            # Redact PII from content
+            $item.content = redact_pii($item.content)
+
+# Response templates for tool violations
+define bot refuse tool access due to insufficient privileges
+    "You don't have sufficient privileges to use this tool. Please contact your administrator if you need additional access."
+
+define bot refuse tool access due to department restrictions
+    "This tool is restricted to specific departments. Please contact the tool owner for access."
+
+define bot refuse dangerous database operation
+    "I cannot execute potentially dangerous database operations. Only SELECT queries are allowed for data safety."
+
+define bot refuse access to sensitive data
+    "Access to sensitive data tables requires administrator privileges. Please contact your database administrator."
+
+define bot refuse non select database operation
+    "Only SELECT queries are permitted for data safety. Please modify your query to use SELECT only."
+
+define bot refuse admin profile access
+    "Access to administrator profiles is restricted. Please contact HR for assistance with employee information."
+
+define bot refuse search for credentials
+    "I cannot search for passwords, API keys, or other credentials for security reasons. Please contact IT support for credential-related issues."
+
+define bot refuse search for private data
+    "Searching for personal or private data requires administrator privileges. Please contact the data owner directly."
+
+define bot warn about pii in ticket
+    "Warning: Your ticket may contain personally identifiable information. Please ensure you have authorization to share this data in a support ticket."
+
+define bot refuse due to potential command injection
+    "I cannot process this request as it contains potentially unsafe command patterns. Please rephrase your request."
+
+define bot refuse due to potential sql injection
+    "I cannot process this request as it contains potentially unsafe SQL patterns. Please rephrase your query safely."
+
+define bot refuse due to potential script injection
+    "I cannot process this request as it contains potentially unsafe script patterns. Please remove any script tags or JavaScript."
+
+define bot warn about suspicious activity
+    "I've detected an unusual pattern in your tool usage. This activity has been logged for security review."
+
+define bot limit tool usage due to suspicious pattern
+    "Your tool usage pattern has triggered security monitoring. Please contact security if you have legitimate business needs for this access pattern."
+
+define bot enforce rate limiting $tool_name
+    "You have exceeded the usage limit for " + $tool_name + ". Please wait before making additional requests or contact support for higher limits."
+
+# Utility functions
+define function tool_rate_limit $tool_name
+    if $tool_name == "query_database"
+        return 10  # 10 queries per hour
+    if $tool_name == "get_user_profile" 
+        return 20  # 20 profile lookups per hour
+    if $tool_name in ["search_internal_kb", "web_search"]
+        return 100 # 100 searches per hour
+    return 50     # Default limit
+
+define function redact_pii $text
+    $redacted = $text
+    $redacted = $redacted.replace_pattern("\\b\\d{3}-\\d{2}-\\d{4}\\b", "[SSN_REDACTED]")
+    $redacted = $redacted.replace_pattern("\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b", "[EMAIL_REDACTED]")
+    return $redacted
+
+define function get user tool usage count $user_id $tool_name
+    # This would query the usage tracking system
+    return 0  # Placeholder
+
+define function increment user tool usage count $user_id $tool_name
+    # This would update the usage tracking system
+    pass
+
+define function log $event_type $details
+    # This would integrate with the logging system
+    pass
+
+define function alert $severity $user_id $tool_name $reason
+    # This would trigger security alerts
+    pass

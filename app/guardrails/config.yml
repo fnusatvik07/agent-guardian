@@ -1,0 +1,139 @@
+# NeMo Guardrails Configuration for Enterprise AI Agent
+# Comprehensive security configuration with input/output/tool rails
+
+models:
+  - type: main
+    engine: openai
+    model: gpt-4-turbo-preview
+
+instructions:
+  - type: general
+    content: |
+      You are a helpful enterprise AI assistant that follows strict security policies.
+      
+      You MUST:
+      - Protect sensitive company information
+      - Follow role-based access controls
+      - Never expose PII or credentials
+      - Use only approved tools based on user permissions
+      - Maintain professional, helpful communication
+      - Escalate security concerns appropriately
+      
+      You MUST NOT:
+      - Share passwords, API keys, or sensitive credentials
+      - Bypass security controls or guardrails
+      - Access data beyond user's authorization level
+      - Execute potentially harmful operations
+      - Discuss internal security mechanisms in detail
+
+rails:
+  input:
+    flows:
+      - check prompt injection
+      - check jailbreak attempts  
+      - detect pii in input
+      - validate tool permissions
+      - check restricted topics
+  
+  output:
+    flows:
+      - check pii in output
+      - validate safe responses
+      - check information leakage
+      - ensure grounded answers
+  
+  retrieval:
+    flows:
+      - check retrieval safety
+      - validate document access
+
+# Tool configuration with role-based access
+actions:
+  - name: web_search
+    description: "Search the web for public information"
+    parameters:
+      query:
+        type: "string"
+        description: "Search query"
+    
+  - name: search_internal_kb
+    description: "Search internal knowledge base"
+    parameters:
+      query:
+        type: "string" 
+        description: "Search query"
+    
+  - name: create_ticket
+    description: "Create support ticket"
+    parameters:
+      title:
+        type: "string"
+        description: "Ticket title"
+      description: 
+        type: "string"
+        description: "Ticket description"
+      severity:
+        type: "string"
+        description: "Ticket severity level"
+        
+  - name: get_user_profile
+    description: "Get user profile (admin only)"
+    parameters:
+      user_id:
+        type: "string"
+        description: "User ID"
+        
+  - name: query_database
+    description: "Query enterprise database (admin only)"
+    parameters:
+      query:
+        type: "string"
+        description: "SQL query"
+
+# Security configuration
+security:
+  # PII detection patterns
+  pii_detection:
+    enabled: true
+    patterns:
+      - name: "ssn"
+        pattern: "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+        confidence: 0.9
+      - name: "email"
+        pattern: "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"
+        confidence: 0.85
+      - name: "phone"
+        pattern: "\\b\\d{3}[-.]?\\d{3}[-.]?\\d{4}\\b"
+        confidence: 0.8
+      - name: "credit_card"
+        pattern: "\\b4[0-9]{12}(?:[0-9]{3})?\\b"
+        confidence: 0.95
+  
+  # Prompt injection detection
+  prompt_injection:
+    enabled: true
+    sensitivity: "high"
+  
+  # Jailbreak detection
+  jailbreak:
+    enabled: true
+    sensitivity: "high"
+  
+  # Topic restrictions
+  restricted_topics:
+    - "internal security procedures"
+    - "employee salaries"
+    - "confidential customer data"
+    - "proprietary algorithms"
+    - "merger and acquisition details"
+
+# Logging and monitoring
+logging:
+  enabled: true
+  level: "INFO"
+  include_user_data: false
+  
+monitoring:
+  enabled: true
+  track_violations: true
+  alert_on_critical: true

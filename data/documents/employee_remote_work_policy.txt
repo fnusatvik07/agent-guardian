@@ -1,0 +1,36 @@
+Employee Handbook - Remote Work Policy
+
+Our company supports flexible remote work arrangements to promote work-life balance and productivity.
+
+REMOTE WORK ELIGIBILITY:
+- Full-time employees after 90 days of employment
+- Part-time employees after 6 months 
+- Must have satisfactory performance reviews
+- Role must be suitable for remote work
+
+REMOTE WORK ARRANGEMENTS:
+- Up to 3 days per week remote work with manager approval
+- Fully remote work requires VP approval
+- Hybrid schedules must include 2 days minimum in office
+- Core collaboration hours: 10 AM - 3 PM local time
+
+EQUIPMENT AND SECURITY:
+- Company laptop with VPN access required
+- Secure internet connection (minimum 25 Mbps)
+- Dedicated workspace with privacy for confidential calls
+- All company data must remain encrypted
+- No public WiFi for accessing company systems
+
+COMMUNICATION REQUIREMENTS:
+- Daily check-ins with immediate supervisor
+- Participation in all scheduled team meetings
+- Response time expectations: email within 4 hours, Slack within 1 hour
+- Video conference for all client meetings
+
+PERFORMANCE EXPECTATIONS:
+- Maintain same productivity levels as in-office work
+- Complete all assigned tasks by deadlines
+- Participate actively in team collaboration
+- Attend mandatory in-person meetings and training
+
+For questions about remote work policies, contact HR at hr@company.com or extension 5555.

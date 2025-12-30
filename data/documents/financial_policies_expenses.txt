@@ -1,0 +1,77 @@
+Financial Policies and Expense Management
+
+This document outlines financial policies, expense management, and procurement procedures.
+
+EXPENSE REIMBURSEMENT POLICY:
+- Submission Deadline: Expenses must be submitted within 60 days of incurrence
+- Required Documentation: Original receipts for all expenses over $25
+- Approval Limits: 
+  * Up to $500: Direct manager approval
+  * $501-$2,500: Department head approval
+  * Above $2,500: Finance team and VP approval
+- Reimbursement Timeline: Approved expenses paid within 10 business days
+- Mileage Rate: Current IRS standard rate ($0.655 per mile for 2023)
+
+TRAVEL AND ENTERTAINMENT:
+- Flight Booking: Economy class for domestic, business class for international flights over 6 hours
+- Hotel Accommodations: Standard business hotels, $250/night limit in major cities
+- Meal Allowances: $75/day domestic, varies by international location
+- Ground Transportation: Ride-sharing or taxi receipts required for trips over $25
+- Client Entertainment: Business purpose required, alcohol limits apply
+- Personal Expenses: Not reimbursable (personal calls, minibar, movies)
+
+PROCUREMENT PROCEDURES:
+- Purchase Orders Required: All purchases over $1,000
+- Vendor Approval: New vendors require finance and legal review
+- Contract Terms: Standard payment terms are Net 30
+- Budget Allocation: Purchases must have approved budget allocation
+- Competitive Bidding: Required for purchases over $10,000
+- Emergency Purchases: Retroactive approval process for urgent needs
+
+CREDIT CARD POLICIES:
+- Corporate Cards: Available for employees with regular travel/expense needs
+- Spending Limits: Based on role and historical expense patterns
+- Personal Use: Strictly prohibited, may result in immediate card cancellation
+- Lost/Stolen Cards: Report immediately to finance team and card provider
+- Statement Review: Monthly reconciliation required within 15 days
+- Violations: Repeated policy violations may result in card revocation
+
+BUDGET MANAGEMENT:
+- Annual Planning: Department budgets due October 1st for following fiscal year
+- Quarterly Reviews: Budget vs actual analysis with variance explanations
+- Budget Transfers: Require CFO approval for transfers over $5,000
+- Capital Expenditures: Assets over $5,000 require depreciation planning
+- Project Budgets: Separate tracking for initiatives with dedicated funding
+- Contingency Planning: 5% buffer recommended for unexpected expenses
+
+FINANCIAL REPORTING:
+- Monthly Closes: Department expense reports due by 5th of following month
+- Accruals: Estimate unpaid invoices for month-end reporting
+- Cost Center Allocation: Shared expenses allocated based on usage metrics
+- Variance Analysis: Explanations required for variances over 10% or $1,000
+- Forecasting: Quarterly updates to annual forecast based on trends
+- Key Metrics: Track spend per employee, budget utilization, and cost trends
+
+INVOICE PROCESSING:
+- Invoice Submission: Send to accounts.payable@company.com
+- Three-Way Match: Purchase order, receipt confirmation, and invoice required
+- Approval Workflow: Electronic routing based on dollar amount thresholds
+- Payment Terms: Take advantage of early payment discounts when beneficial
+- Vendor Communications: Direct all payment inquiries to AP team
+- Document Retention: 7-year retention for all financial documents
+
+FINANCIAL CONTROLS:
+- Segregation of Duties: No single person handles entire transaction cycle
+- Bank Reconciliation: Daily cash position monitoring and monthly reconciliation
+- Petty Cash: $500 maximum, receipts required for all disbursements
+- Check Signing: Dual authorization required for checks over $5,000
+- Wire Transfers: CFO approval and verification required for all wires
+- Audit Compliance: Maintain documentation to support annual audit requirements
+
+TAX COMPLIANCE:
+- Sales Tax: Automated calculation and filing for all jurisdictions
+- Income Tax: Quarterly estimated payments and annual filing
+- Payroll Tax: Timely deposit and reporting for all payroll obligations
+- International: Transfer pricing and foreign tax credit considerations
+- Documentation: Maintain supporting records for all tax positions
+- Professional Services: External tax advisor for complex transactions

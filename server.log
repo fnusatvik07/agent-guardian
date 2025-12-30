@@ -1,0 +1,212 @@
+/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'schema_extra' has been renamed to 'json_schema_extra'
+  warnings.warn(message, UserWarning)
+INFO:     Will watch for changes in these directories: ['/Users/fnu.satvik/dev/github.com/satvik/governance_agent']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [89188] using WatchFiles
+🚀 Starting Secure Enterprise AI Agent
+📍 Host: 0.0.0.0
+🔌 Port: 8000
+🔒 Guardrails: Enabled
+🤖 LLM: OpenAI
+🌍 Environment: development
+📚 Docs: http://0.0.0.0:8000/docs
+
+/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'schema_extra' has been renamed to 'json_schema_extra'
+  warnings.warn(message, UserWarning)
+INFO:     Started server process [89260]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+{"user_id": "satvik", "error": "'AgentOrchestrator' object has no attribute 'chat'", "error_type": "AttributeError", "event": "Chat request failed", "trace_id": "dee137c6-1674-4a97-965c-eb419194e0a9", "timestamp": "2025-12-30T08:20:04.153124Z", "service": "governance-agent", "level": "error"}
+{"status_code": 500, "detail": "Internal server error. Please try again or contact support.", "url": "http://localhost:8000/api/v1/chat", "method": "POST", "event": "HTTP exception occurred", "trace_id": "dee137c6-1674-4a97-965c-eb419194e0a9", "timestamp": "2025-12-30T08:20:04.153432Z", "service": "governance-agent", "level": "warning"}
+INFO:     127.0.0.1:53356 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+WARNING:  WatchFiles detected changes in 'app/api/chat.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [89260]
+/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'schema_extra' has been renamed to 'json_schema_extra'
+  warnings.warn(message, UserWarning)
+INFO:     Started server process [89710]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+{"event": "\ud83d\udea8 REQUEST ERROR: Agent processing failed - 'RBACManager' object has no attribute 'can_access_chat'", "trace_id": "48a3db8f-39bb-428c-9793-9dc39718403d", "timestamp": "2025-12-30T08:20:43.658435Z", "service": "governance-agent", "level": "error"}
+{"event": "\ud83d\udea8 ERROR TYPE: AttributeError", "trace_id": "48a3db8f-39bb-428c-9793-9dc39718403d", "timestamp": "2025-12-30T08:20:43.658569Z", "service": "governance-agent", "level": "error"}
+{"user_id": "satvik", "error": "'dict' object has no attribute 'violations'", "error_type": "AttributeError", "event": "Chat request failed", "trace_id": "48a3db8f-39bb-428c-9793-9dc39718403d", "timestamp": "2025-12-30T08:20:43.658665Z", "service": "governance-agent", "level": "error"}
+{"status_code": 500, "detail": "Internal server error. Please try again or contact support.", "url": "http://localhost:8000/api/v1/chat", "method": "POST", "event": "HTTP exception occurred", "trace_id": "48a3db8f-39bb-428c-9793-9dc39718403d", "timestamp": "2025-12-30T08:20:43.658922Z", "service": "governance-agent", "level": "warning"}
+INFO:     127.0.0.1:53427 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+WARNING:  WatchFiles detected changes in 'app/agent/orchestrator_langchain.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [89710]
+/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'schema_extra' has been renamed to 'json_schema_extra'
+  warnings.warn(message, UserWarning)
+INFO:     Started server process [90159]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+{"event": "\ud83d\udea8 REQUEST ERROR: Agent processing failed - 'str' object has no attribute 'value'", "trace_id": "4f4c887b-6e03-4c41-b550-89b8e008b142", "timestamp": "2025-12-30T08:21:19.719250Z", "service": "governance-agent", "level": "error"}
+{"event": "\ud83d\udea8 ERROR TYPE: AttributeError", "trace_id": "4f4c887b-6e03-4c41-b550-89b8e008b142", "timestamp": "2025-12-30T08:21:19.719353Z", "service": "governance-agent", "level": "error"}
+{"user_id": "satvik", "error": "'dict' object has no attribute 'violations'", "error_type": "AttributeError", "event": "Chat request failed", "trace_id": "4f4c887b-6e03-4c41-b550-89b8e008b142", "timestamp": "2025-12-30T08:21:19.719462Z", "service": "governance-agent", "level": "error"}
+{"status_code": 500, "detail": "Internal server error. Please try again or contact support.", "url": "http://localhost:8000/api/v1/chat", "method": "POST", "event": "HTTP exception occurred", "trace_id": "4f4c887b-6e03-4c41-b550-89b8e008b142", "timestamp": "2025-12-30T08:21:19.719593Z", "service": "governance-agent", "level": "warning"}
+INFO:     127.0.0.1:53486 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+WARNING:  WatchFiles detected changes in 'app/agent/orchestrator_langchain.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [90159]
+/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'schema_extra' has been renamed to 'json_schema_extra'
+  warnings.warn(message, UserWarning)
+INFO:     Started server process [90593]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/agent/orchestrator_langchain.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [90593]
+/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'schema_extra' has been renamed to 'json_schema_extra'
+  warnings.warn(message, UserWarning)
+INFO:     Started server process [90605]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/agent/orchestrator_langchain.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [90605]
+/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'schema_extra' has been renamed to 'json_schema_extra'
+  warnings.warn(message, UserWarning)
+INFO:     Started server process [90630]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/agent/orchestrator_langchain.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [90630]
+/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'schema_extra' has been renamed to 'json_schema_extra'
+  warnings.warn(message, UserWarning)
+INFO:     Started server process [90654]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/api/chat.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [90654]
+Process SpawnProcess-8:
+Traceback (most recent call last):
+  File "/Users/fnu.satvik/.local/share/uv/python/cpython-3.13.9-macos-aarch64-none/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/Users/fnu.satvik/.local/share/uv/python/cpython-3.13.9-macos-aarch64-none/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+    ~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "/Users/fnu.satvik/.local/share/uv/python/cpython-3.13.9-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/Users/fnu.satvik/.local/share/uv/python/cpython-3.13.9-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/uvicorn/config.py", line 439, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/Users/fnu.satvik/.local/share/uv/python/cpython-3.13.9-macos-aarch64-none/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/app/__init__.py", line 3, in <module>
+    from .main import app
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/app/main.py", line 17, in <module>
+    from app.api import chat_router
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/app/api/__init__.py", line 3, in <module>
+    from .chat import router as chat_router
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/app/api/chat.py", line 227
+    )            logger.info(
+                 ^^^^^^
+SyntaxError: invalid syntax
+WARNING:  WatchFiles detected changes in 'app/api/chat.py'. Reloading...
+Process SpawnProcess-9:
+Traceback (most recent call last):
+  File "/Users/fnu.satvik/.local/share/uv/python/cpython-3.13.9-macos-aarch64-none/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/Users/fnu.satvik/.local/share/uv/python/cpython-3.13.9-macos-aarch64-none/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+    ~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "/Users/fnu.satvik/.local/share/uv/python/cpython-3.13.9-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/Users/fnu.satvik/.local/share/uv/python/cpython-3.13.9-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/uvicorn/config.py", line 439, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/.venv/lib/python3.13/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/Users/fnu.satvik/.local/share/uv/python/cpython-3.13.9-macos-aarch64-none/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/app/__init__.py", line 3, in <module>
+    from .main import app
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/app/main.py", line 17, in <module>
+    from app.api import chat_router
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/app/api/__init__.py", line 3, in <module>
+    from .chat import router as chat_router
+  File "/Users/fnu.satvik/dev/github.com/satvik/governance_agent/app/api/chat.py", line 227
+    )            logger.info(
+                 ^^^^^^
+SyntaxError: invalid syntax
+INFO:     Stopping reloader process [89188]

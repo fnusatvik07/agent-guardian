@@ -1,0 +1,188 @@
+# Output Rails - Validates and sanitizes AI responses before sending to user
+# Prevents information leakage and ensures compliance
+
+define flow check pii in output
+    """Scan AI responses for PII and redact if necessary"""
+    $bot_response = $last_bot_message
+    
+    # Check for SSN patterns in output
+    if $bot_response matches pattern "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+        $bot_response = $bot_response.replace_pattern("\\b\\d{3}-\\d{2}-\\d{4}\\b", "[SSN REDACTED]")
+    
+    # Check for email patterns
+    if $bot_response matches pattern "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"
+        $bot_response = $bot_response.replace_pattern("\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b", "[EMAIL REDACTED]")
+    
+    # Check for phone numbers
+    if $bot_response matches pattern "\\b\\d{3}[-.]?\\d{3}[-.]?\\d{4}\\b"
+        $bot_response = $bot_response.replace_pattern("\\b\\d{3}[-.]?\\d{3}[-.]?\\d{4}\\b", "[PHONE REDACTED]")
+    
+    # Check for credit card patterns
+    if $bot_response matches pattern "\\b4[0-9]{12}(?:[0-9]{3})?\\b"
+        $bot_response = $bot_response.replace_pattern("\\b4[0-9]{12}(?:[0-9]{3})?\\b", "[CREDIT CARD REDACTED]")
+        
+    # Check for API keys or tokens
+    if $bot_response contains "sk-" or $bot_response contains "Bearer "
+        bot refuse to share api credentials
+        stop
+
+define flow validate safe responses
+    """Ensure responses don't contain harmful or inappropriate content"""
+    $bot_response = $last_bot_message
+    
+    # Block responses containing internal system details
+    if $bot_response.lower() contains "internal error" or $bot_response.lower() contains "stack trace"
+        bot provide generic error response
+        stop
+        
+    # Block responses with database connection details  
+    if $bot_response.lower() contains "database connection" or $bot_response.lower() contains "connection string"
+        bot refuse to share system details
+        stop
+        
+    # Block responses with file system paths
+    if $bot_response contains "/etc/" or $bot_response contains "C:\\Program Files"
+        $bot_response = $bot_response.replace_pattern("/[a-zA-Z0-9/_-]+", "[PATH REDACTED]")
+        $bot_response = $bot_response.replace_pattern("C:\\\\[a-zA-Z0-9\\\\_ -]+", "[PATH REDACTED]")
+
+define flow check information leakage
+    """Prevent leakage of sensitive business information"""
+    $bot_response = $last_bot_message
+    
+    # Check for salary information
+    if $bot_response matches pattern "\\$[0-9,]+" and ($bot_response.lower() contains "salary" or $bot_response.lower() contains "wage")
+        if $user.role != "admin"
+            bot refuse to share salary information  
+            stop
+    
+    # Check for customer financial data
+    if $bot_response.lower() contains "customer revenue" or $bot_response.lower() contains "customer payment"
+        if $user.role != "admin"
+            bot refuse to share customer financial data
+            stop
+            
+    # Check for proprietary information
+    if $bot_response.lower() contains "proprietary" or $bot_response.lower() contains "trade secret"
+        bot refuse to share proprietary information
+        stop
+        
+    # Check for competitor information
+    if $bot_response.lower() contains "competitor analysis" or $bot_response.lower() contains "competitive intelligence"
+        if $user.role != "admin"
+            bot refuse to share competitive information
+            stop
+
+define flow ensure grounded answers
+    """Ensure responses are based on available data and tools"""
+    $bot_response = $last_bot_message
+    
+    # Check if response makes unsupported claims
+    if $bot_response.lower() contains "i have access to" and not $tools_used
+        bot clarify available capabilities
+        stop
+        
+    # Ensure tool results are properly cited
+    if $tools_used and not ($bot_response.lower() contains "based on" or $bot_response.lower() contains "according to")
+        $bot_response = "Based on the available information: " + $bot_response
+        
+    # Check for speculation without data
+    if $bot_response.lower() contains "probably" or $bot_response.lower() contains "likely" or $bot_response.lower() contains "might be"
+        if not $tools_used
+            bot provide factual response only
+            stop
+
+define flow check retrieval safety
+    """Validate that retrieved information is safe to share"""
+    $retrieved_content = $last_retrieved_content
+    
+    # Check classification markings
+    if $retrieved_content.lower() contains "confidential" or $retrieved_content.lower() contains "classified"
+        if $user.role != "admin"
+            bot refuse to share classified information
+            stop
+    
+    # Check for personnel records
+    if $retrieved_content.lower() contains "personnel record" or $retrieved_content.lower() contains "hr file"
+        if $user.role != "admin"
+            bot refuse to share personnel records
+            stop
+            
+    # Check for legal documents
+    if $retrieved_content.lower() contains "attorney-client" or $retrieved_content.lower() contains "legal privilege"
+        bot refuse to share privileged information
+        stop
+
+define flow validate document access
+    """Ensure user has permission to access retrieved documents"""
+    $document_metadata = $retrieved_document_metadata
+    
+    # Check document access level
+    if $document_metadata.access_level == "admin_only"
+        if $user.role != "admin"
+            bot refuse document access due to permissions
+            stop
+    
+    # Check department restrictions
+    if $document_metadata.department_restricted
+        if $user.department != $document_metadata.allowed_department
+            bot refuse document access due to department restrictions
+            stop
+            
+    # Check security clearance requirements
+    if $document_metadata.requires_clearance
+        if not $user.has_security_clearance
+            bot refuse document access due to clearance requirements
+            stop
+
+# Response templates for output violations
+define bot refuse to share api credentials
+    "I cannot share API keys, tokens, or other credentials for security reasons. Please contact your system administrator for access credentials."
+
+define bot provide generic error response
+    "I encountered an issue processing your request. Please try again or contact support if the problem persists."
+
+define bot refuse to share system details
+    "I cannot provide internal system configuration details for security reasons. Please contact IT support for system-related questions."
+
+define bot refuse to share salary information
+    "I cannot provide salary or compensation details. Please contact HR for employment-related information."
+
+define bot refuse to share customer financial data
+    "I cannot access or share customer financial information. Please follow proper data access procedures."
+
+define bot refuse to share proprietary information
+    "I cannot share proprietary or confidential business information. Please check with the appropriate department for authorized information."
+
+define bot refuse to share competitive information
+    "I cannot provide competitive intelligence or analysis. Please contact the business development team for market information."
+
+define bot clarify available capabilities
+    "I can help you using the tools available to your role, including knowledge base search, ticket creation, and web search. What specific task would you like assistance with?"
+
+define bot provide factual response only
+    "I can only provide information based on available data and tools. Let me search for factual information to help answer your question."
+
+define bot refuse to share classified information
+    "I cannot share classified or confidential documents. Please ensure you have proper authorization for sensitive information."
+
+define bot refuse to share personnel records
+    "Personnel records are confidential and can only be accessed by authorized HR personnel. Please contact HR directly."
+
+define bot refuse to share privileged information
+    "I cannot share legally privileged information. Please contact the legal department for guidance."
+
+define bot refuse document access due to permissions
+    "You don't have sufficient permissions to access this document. Please request access through your manager or IT department."
+
+define bot refuse document access due to department restrictions
+    "This document is restricted to specific departments. Please contact the document owner for access."
+
+define bot refuse document access due to clearance requirements
+    "This document requires security clearance that you don't currently have. Please contact security for clearance information."
+
+# Utility functions
+define flow redact sensitive data $text
+    $redacted_text = $text
+    $redacted_text = $redacted_text.replace_pattern("\\b\\d{3}-\\d{2}-\\d{4}\\b", "[REDACTED]")
+    $redacted_text = $redacted_text.replace_pattern("\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b", "[REDACTED]")
+    return $redacted_text

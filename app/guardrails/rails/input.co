@@ -1,0 +1,169 @@
+# Input Rails - Validates and sanitizes user inputs before processing
+# Protects against prompt injection, jailbreaks, and PII exposure
+
+define flow check prompt injection
+    """Detect and block prompt injection attempts"""
+    $user_message = $last_user_message
+    
+    # Check for common prompt injection patterns
+    if $user_message.lower() contains "ignore previous instructions"
+        bot refuse to answer due to prompt injection
+        stop
+    
+    if $user_message.lower() contains "you are now"
+        bot refuse to answer due to prompt injection  
+        stop
+        
+    if $user_message.lower() contains "forget everything"
+        bot refuse to answer due to prompt injection
+        stop
+        
+    if $user_message.lower() contains "new role:"
+        bot refuse to answer due to prompt injection
+        stop
+        
+    if $user_message.lower() contains "system:"
+        bot refuse to answer due to prompt injection
+        stop
+
+define flow check jailbreak attempts
+    """Detect attempts to bypass safety guidelines"""
+    $user_message = $last_user_message
+    
+    # Common jailbreak patterns
+    if $user_message.lower() contains "pretend you are"
+        bot refuse jailbreak attempt
+        stop
+        
+    if $user_message.lower() contains "act as if"
+        bot refuse jailbreak attempt
+        stop
+        
+    if $user_message.lower() contains "simulate"
+        if $user_message.lower() contains "evil" or $user_message.lower() contains "malicious"
+            bot refuse jailbreak attempt
+            stop
+    
+    if $user_message.lower() contains "roleplay as"
+        if $user_message.lower() contains "hacker" or $user_message.lower() contains "criminal"
+            bot refuse jailbreak attempt
+            stop
+            
+    if $user_message.lower() contains "bypass"
+        if $user_message.lower() contains "safety" or $user_message.lower() contains "filter"
+            bot refuse jailbreak attempt
+            stop
+
+define flow detect pii in input
+    """Detect PII in user input and warn/block accordingly"""
+    $user_message = $last_user_message
+    
+    # Check for SSN patterns
+    if $user_message matches pattern "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+        bot warn about pii in input
+        # Continue but log the violation
+    
+    # Check for email patterns  
+    if $user_message matches pattern "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"
+        bot warn about pii in input
+        # Continue but log
+        
+    # Check for credit card patterns (block these)
+    if $user_message matches pattern "\\b4[0-9]{12}(?:[0-9]{3})?\\b"
+        bot refuse due to credit card data
+        stop
+        
+    # Check for potential passwords
+    if $user_message.lower() contains "password is" or $user_message.lower() contains "my password"
+        bot refuse due to password exposure
+        stop
+
+define flow validate tool permissions
+    """Ensure user has permission for requested tool operations"""
+    $user_message = $last_user_message
+    
+    # Check for database access requests (admin only)
+    if $user_message.lower() contains "query database" or $user_message.lower() contains "sql"
+        if $user.role != "admin"
+            bot refuse due to insufficient permissions for database access
+            stop
+    
+    # Check for user profile access (admin only)
+    if $user_message.lower() contains "user profile" or $user_message.lower() contains "employee data"
+        if $user.role != "admin"
+            bot refuse due to insufficient permissions for user data access
+            stop
+            
+    # Check for sensitive document access
+    if $user_message.lower() contains "confidential" or $user_message.lower() contains "classified"
+        if $user.role != "admin"
+            bot refuse due to insufficient permissions for sensitive documents
+            stop
+
+define flow check restricted topics
+    """Block discussion of restricted enterprise topics"""
+    $user_message = $last_user_message
+    
+    # Financial information
+    if $user_message.lower() contains "salary" or $user_message.lower() contains "compensation"
+        if $user.role != "admin"
+            bot refuse to discuss salary information
+            stop
+    
+    # Security procedures
+    if $user_message.lower() contains "security procedure" or $user_message.lower() contains "incident response"
+        if $user.role != "admin"
+            bot refuse to discuss security procedures
+            stop
+            
+    # M&A information
+    if $user_message.lower() contains "merger" or $user_message.lower() contains "acquisition"
+        bot refuse to discuss confidential business information
+        stop
+        
+    # Customer private data
+    if $user_message.lower() contains "customer ssn" or $user_message.lower() contains "customer credit"
+        bot refuse to access customer private data
+        stop
+
+# Response templates for various violations
+define bot refuse to answer due to prompt injection
+    "I cannot process requests that attempt to modify my instructions or behavior. Please rephrase your question in a straightforward manner."
+
+define bot refuse jailbreak attempt
+    "I cannot fulfill requests that ask me to simulate harmful, unethical, or inappropriate scenarios. How else can I help you today?"
+
+define bot warn about pii in input
+    "I notice your message may contain personally identifiable information. For security reasons, please avoid sharing sensitive data like SSNs, credit card numbers, or passwords. I'll help with your question while keeping data security in mind."
+
+define bot refuse due to credit card data
+    "I cannot process messages containing credit card information for security reasons. Please remove any sensitive financial data and try again."
+
+define bot refuse due to password exposure
+    "I cannot process messages containing passwords or credentials. Please never share sensitive authentication information. How else can I assist you?"
+
+define bot refuse due to insufficient permissions for database access
+    "Database access is restricted to administrators only. As an employee, you have access to knowledge base search and ticket creation. What would you like to help you with?"
+
+define bot refuse due to insufficient permissions for user data access
+    "Access to employee profile data is restricted to administrators. I can help you with other tasks like searching our knowledge base or creating support tickets."
+
+define bot refuse due to insufficient permissions for sensitive documents
+    "Access to confidential documents requires administrative privileges. I can help you find publicly available information or create a ticket for document access requests."
+
+define bot refuse to discuss salary information
+    "I cannot provide salary or compensation information. Please contact HR directly for employment-related questions."
+
+define bot refuse to discuss security procedures
+    "I cannot discuss internal security procedures. Please contact the security team if you have security-related questions."
+
+define bot refuse to discuss confidential business information
+    "I cannot provide information about confidential business matters. Please check with your manager or the appropriate department."
+
+define bot refuse to access customer private data
+    "I cannot access or provide customer private information. Please follow proper data access procedures through your department."
+
+# Log security events
+define flow log security event $event_type $details
+    # This would integrate with the logging system
+    log security violation $event_type with details $details
