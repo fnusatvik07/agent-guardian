@@ -12,7 +12,6 @@ from pydantic import BaseModel, Field, validator
 from app.config import get_settings, Settings
 from app.observability import get_logger, trace_manager, tracer
 from app.agent import agent_orchestrator, AgentRequest, AgentMode, ResponseStatus
-from app.security import rbac_manager
 
 # Initialize router
 router = APIRouter(prefix="/api/v1", tags=["chat"])

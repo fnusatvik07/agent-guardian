@@ -5,6 +5,10 @@ Runs the FastAPI application with proper configuration.
 """
 
 if __name__ == "__main__":
+    # Load environment variables from .env file
+    from dotenv import load_dotenv
+    load_dotenv()
+    
     import uvicorn
     from app.config import get_settings
     

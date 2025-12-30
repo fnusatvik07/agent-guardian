@@ -52,6 +52,18 @@ class GuardrailsViolation:
     user_id: Optional[str] = None
     blocked: bool = True
     recommendation: Optional[str] = None
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert violation to dictionary format."""
+        return {
+            "type": self.violation_type.value,
+            "severity": self.severity,
+            "message": self.message,
+            "context": self.context,
+            "user_id": self.user_id,
+            "blocked": self.blocked,
+            "recommendation": self.recommendation
+        }
 
 
 @dataclass

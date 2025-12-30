@@ -51,22 +51,11 @@ class AgentOrchestrator:
     
     def __init__(self):
         self.settings = get_settings()
-        self.logger = get_logger("agent_orchestrator")
+        self.logger = get_logger("orchestrator")
         self.agent = simple_agent
     
-    async def health_check(self) -> Dict[str, Any]:
-        """Health check for the orchestrator."""
-        return {
-            "status": "healthy",
-            "components": {
-                "agent": "healthy",
-                "langchain": "healthy"
-            },
-            "timestamp": time.time()
-        }
-    
     async def process_request(self, request: AgentRequest) -> Dict[str, Any]:
-        """Process agent request with optional guardrails and detailed logging."""
+        """Process agent request with optional guardrails."""
         start_time = time.time()
         trace_id = str(uuid.uuid4())
         
@@ -75,7 +64,7 @@ class AgentOrchestrator:
         self.logger.info(f"🔍 TRACE ID: {trace_id}")
         
         try:
-            # Create simple user context for guardrails
+            # Create simple user context
             from app.security.rbac import Role
             user = User(user_id=request.user_id, role=Role(request.role))
             self.logger.info(f"👤 USER CONTEXT: Created user with role={user.role.value}")
@@ -106,77 +95,59 @@ class AgentOrchestrator:
             # Process with agent
             self.logger.info("🤖 AGENT PROCESSING: Sending to LangChain agent")
             
-            # Set user context in agent for RBAC
-            self.agent.set_user_context(user)
-            
             messages = [{"role": "user", "content": request.message}]
             agent_response = await self.agent.chat_completion(messages)
             self.logger.info(f"✅ AGENT COMPLETE: Generated response with {len(agent_response.content or '')} characters")
             
             # Output guardrails check
             final_content = agent_response.content
-            guardrails_violations = []
+            violations = []
             
             if request.enable_guardrails and final_content:
                 self.logger.info("🛡️ GUARDRAILS: Validating output content")
-                guardrails_result = await guardrails_engine.evaluate_output(
-                    final_content, user, {"trace_id": trace_id}
+                output_result = await guardrails_engine.evaluate_output(
+                    final_content, user, trace_id
                 )
                 
-                # Collect violations for logging
-                guardrails_violations = [v.to_dict() if hasattr(v, 'to_dict') else v for v in guardrails_result.violations]
+                if not output_result.allowed:
+                    self.logger.warning(f"🚫 OUTPUT BLOCKED: Violations={output_result.violations}")
+                    final_content = "I cannot provide that information due to content policy restrictions."
+                    violations.extend(output_result.violations)
+                elif output_result.modified_content != final_content:
+                    # Apply redacted content
+                    final_content = output_result.modified_content
+                    violations.extend([v for v in output_result.violations if 'pii' in v.lower()])
+                    self.logger.info("🔒 GUARDRAILS: Applied content redaction")
                 
-                if not guardrails_result.allowed:
-                    self.logger.warning(f"🚫 OUTPUT BLOCKED: Violations={guardrails_result.violations}")
-                    final_content = "Response was blocked by content policy."
-                elif guardrails_result.modified_content:
-                    # Apply redacted content when PII or other content modifications are made
-                    self.logger.info(f"🔒 PII REDACTED: Applied content modifications")
-                    final_content = guardrails_result.modified_content
-                    
-                    # Log the PII violations for audit trail
-                    for violation in guardrails_result.violations:
-                        guardrails_logger.log_violation(
-                            violation_type=violation.violation_type.value,
-                            message=violation.message,
-                            blocked=violation.blocked,
-                            details={
-                                "user_id": user.user_id,
-                                "severity": violation.severity,
-                                "context": violation.context,
-                                "trace_id": trace_id
-                            }
-                        )
-                else:
-                    self.logger.info("✅ GUARDRAILS: Output validation passed")
-            else:
-                self.logger.info("⚠️ GUARDRAILS: Bypassed for output (unguarded mode)")
+                self.logger.info("✅ GUARDRAILS: Output validation complete")
             
             processing_time = (time.time() - start_time) * 1000
-            self.logger.info(f"🎯 REQUEST COMPLETE: Processing took {processing_time:.2f}ms")
             
+            # Format response
             return {
-                "reply": final_content,
+                "reply": final_content or "I couldn't generate a response.",
                 "status": ResponseStatus.SUCCESS.value,
                 "guardrails_enabled": request.enable_guardrails,
                 "blocked": False,
-                "violations": guardrails_violations,  # Include guardrails violations
-                "tool_calls": agent_response.tool_calls or [],
+                "violations": violations,
+                "tool_calls": agent_response.tool_calls,
                 "trace_id": trace_id,
                 "metadata": {
                     "processing_time_ms": processing_time,
                     "framework": "langchain",
-                    "mode": "guarded" if request.enable_guardrails else "unguarded",
-                    "tools_used": len(agent_response.tool_calls or []),
-                    "agent_metadata": getattr(agent_response, 'metadata', {})
+                    "mode": AgentMode.GUARDED.value if request.enable_guardrails else AgentMode.UNGUARDED.value,
+                    "tools_used": len(agent_response.tool_calls),
+                    "agent_metadata": agent_response.metadata
                 },
                 "timestamp": time.time()
             }
             
         except Exception as e:
-            self.logger.error(f"🚨 REQUEST ERROR: Agent processing failed - {str(e)}")
-            self.logger.error(f"🚨 ERROR TYPE: {type(e).__name__}")
             processing_time = (time.time() - start_time) * 1000
+            error_msg = str(e)
+            
+            self.logger.error(f"🚨 REQUEST ERROR: Agent processing failed - {error_msg}")
+            self.logger.error(f"🚨 ERROR TYPE: {type(e).__name__}")
             
             return {
                 "reply": "I apologize, but I encountered an error processing your request. Please try again or contact support if the problem persists.",
@@ -188,7 +159,7 @@ class AgentOrchestrator:
                 "trace_id": trace_id,
                 "metadata": {
                     "processing_time_ms": processing_time,
-                    "error": str(e),
+                    "error": error_msg,
                     "error_type": type(e).__name__,
                     "framework": "langchain"
                 },
@@ -196,5 +167,5 @@ class AgentOrchestrator:
             }
 
 
-# Global instance
+# Create global instance
 agent_orchestrator = AgentOrchestrator()

@@ -8,6 +8,10 @@ from typing import Optional, List
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 
 class DatabaseSettings(BaseSettings):
     """Database configuration for SQLite and MongoDB."""
@@ -20,7 +24,7 @@ class DatabaseSettings(BaseSettings):
 
 class LLMSettings(BaseSettings):
     """LLM provider configuration with fallback support."""
-    openai_api_key: Optional[str] = Field(default=None)
+    openai_api_key: Optional[str] = Field(default=None, alias="OPENAI_API_KEY")
     openai_base_url: str = Field(default="https://api.openai.com/v1")
     model_name: str = Field(default="gpt-4-turbo-preview")
     max_tokens: int = Field(default=4000)
@@ -58,18 +62,14 @@ class SecuritySettings(BaseSettings):
     
     # Role-based permissions
     employee_allowed_tools: List[str] = Field(default_factory=lambda: [
-        "search_internal_kb",
-        "create_ticket",
-        "web_search"
+        "search_policies",
+        "get_employee_count"  # Only basic aggregation queries
     ])
     
     admin_allowed_tools: List[str] = Field(default_factory=lambda: [
-        "search_internal_kb",
-        "create_ticket", 
-        "get_user_profile",
-        "web_search",
-        "query_database",
-        "access_sensitive_docs"
+        "search_policies",
+        "get_employee_count",
+        "execute_sql_query"  # Full database access including PII
     ])
     
     @field_validator('employee_allowed_tools', mode='before')
