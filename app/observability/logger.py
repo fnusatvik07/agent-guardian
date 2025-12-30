@@ -207,6 +207,33 @@ class AgentLogger:
     def __init__(self):
         self.logger = get_logger("agent")
     
+    def log_tool_call_start(self, tool_name: str, args: Dict[str, Any]):
+        """Log the start of a tool call with prominent terminal formatting."""
+        self.logger.info(
+            f"🔧 TOOL CALL START: {tool_name.upper()}",
+            tool_name=tool_name,
+            args=args,
+            event_type="tool_call_start"
+        )
+    
+    def log_tool_call_result(self, tool_name: str, result: Any, success: bool = True, error: Optional[str] = None):
+        """Log the result of a tool call with prominent terminal formatting."""
+        if success and not error:
+            emoji = "✅"
+            status = "SUCCESS"
+        else:
+            emoji = "❌"
+            status = "ERROR"
+        
+        self.logger.info(
+            f"{emoji} TOOL RESULT {status}: {tool_name.upper()}",
+            tool_name=tool_name,
+            result=str(result)[:200] if result else None,
+            success=success,
+            error=error,
+            event_type="tool_call_result"
+        )
+    
     def log_tool_call(
         self, 
         tool_name: str, 

@@ -92,7 +92,7 @@ class SecuritySettings(BaseSettings):
 class ObservabilitySettings(BaseSettings):
     """Logging and tracing configuration."""
     log_level: str = Field(default="INFO")
-    log_format: str = Field(default="json")
+    log_format: str = Field(default="console")
     enable_tracing: bool = Field(default=True)
     trace_sampling_rate: float = Field(default=1.0)
     

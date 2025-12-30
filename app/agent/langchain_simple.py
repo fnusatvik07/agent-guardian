@@ -3,6 +3,7 @@ Simple LangChain agent following official v1.0 documentation.
 """
 import json
 import asyncio
+import time
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 
@@ -51,7 +52,14 @@ class SimpleLangChainAgent:
         self.agent = create_agent(
             model=model,
             tools=tools,
-            system_prompt="You are a helpful enterprise assistant. Use the available tools to answer questions accurately. Always use tools to get current data instead of guessing."
+            system_prompt="""You are a helpful enterprise assistant. 
+
+CRITICAL: You MUST ALWAYS use the available tools to answer questions. Never use your training data or make assumptions.
+
+For employee-related questions (count, list, departments, etc.): Use get_employee_count tool
+For policy, document, or guideline questions: Use search_policies tool
+
+ALWAYS call the appropriate tool first before providing any answer. Do not provide information without calling a tool."""
         )
         
         self._initialized = True
@@ -62,6 +70,9 @@ class SimpleLangChainAgent:
         @tool
         def get_employee_count() -> str:
             """Get total number of employees."""
+            from app.observability import agent_logger
+            
+            agent_logger.log_tool_call_start("get_employee_count", {})
             self.logger.info("🔧 TOOL CALLED: get_employee_count - Starting employee count query")
             
             try:
@@ -86,19 +97,30 @@ class SimpleLangChainAgent:
                         count = len(result.data)
                         self.logger.info(f"✅ DATABASE SUCCESS: Retrieved {count} employee records")
                         self.logger.info(f"📈 RESULT: Company has {count} total employees")
-                        return f"Company has {count} employees"
+                        
+                        final_result = f"Company has {count} employees"
+                        agent_logger.log_tool_call_result("get_employee_count", final_result, success=True)
+                        
+                        return final_result
                     else:
+                        error_msg = f"Database query failed: {result.error}"
                         self.logger.error(f"❌ DATABASE ERROR: {result.error}")
-                        return f"Error: {result.error}"
+                        agent_logger.log_tool_call_result("get_employee_count", error_msg, success=False, error=result.error)
+                        return error_msg
                 finally:
                     loop.close()
             except Exception as e:
+                error_msg = f"Error getting employee count: {e}"
                 self.logger.error(f"🚨 TOOL EXCEPTION: get_employee_count failed - {e}")
-                return f"Error getting employee count: {e}"
+                agent_logger.log_tool_call_result("get_employee_count", error_msg, success=False, error=str(e))
+                return error_msg
         
         @tool  
         def search_policies(topic: str) -> str:
             """Search company policies and procedures."""
+            from app.observability import agent_logger
+            
+            agent_logger.log_tool_call_start("search_policies", {"topic": topic})
             self.logger.info(f"🔧 TOOL CALLED: search_policies - Searching for topic: '{topic}'")
             
             try:
@@ -130,15 +152,22 @@ class SimpleLangChainAgent:
                                 content_preview = str(doc.get('content', ''))[:100]
                                 self.logger.info(f"📄 DOC {i+1}: Source={source}, Score={score}, Preview='{content_preview}...'")
                         
-                        return json.dumps(result.data)
+                        final_result = json.dumps(result.data)
+                        agent_logger.log_tool_call_result("search_policies", f"Found {doc_count} relevant documents", success=True)
+                        
+                        return final_result
                     else:
+                        error_msg = f"Error: {result.error}"
                         self.logger.error(f"❌ RAG ERROR: {result.error}")
-                        return f"Error: {result.error}"
+                        agent_logger.log_tool_call_result("search_policies", error_msg, success=False, error=result.error)
+                        return error_msg
                 finally:
                     loop.close()
             except Exception as e:
+                error_msg = f"Error searching policies: {e}"
                 self.logger.error(f"🚨 TOOL EXCEPTION: search_policies failed - {e}")
-                return f"Error searching policies: {e}"
+                agent_logger.log_tool_call_result("search_policies", error_msg, success=False, error=str(e))
+                return error_msg
         
         tools = [get_employee_count, search_policies]
         self.logger.info(f"🛠️ TOOLS INITIALIZED: {len(tools)} tools available - {[tool.name for tool in tools]}")
@@ -146,10 +175,13 @@ class SimpleLangChainAgent:
     
     async def chat_completion(self, messages: List[Dict[str, Any]], **kwargs) -> AgentResponse:
         """Process chat using official LangChain agent with detailed logging."""
+        from app.observability import agent_logger
+        
         self._initialize()
         
         user_input = messages[-1]["content"]
         self.logger.info(f"🚀 CHAT START: Processing user query: '{user_input}'")
+        agent_logger.log_tool_call_start("langchain_agent", {"user_input": user_input})
         
         try:
             self.logger.info("🤖 AGENT: Invoking LangChain agent with create_agent")
@@ -162,32 +194,81 @@ class SimpleLangChainAgent:
             self.logger.info(f"📦 AGENT RESULT: Raw result type={type(result)}")
             self.logger.info(f"📦 AGENT RESULT: Keys={list(result.keys()) if isinstance(result, dict) else 'Not a dict'}")
             
-            # Extract the final message content
+            # Debug: Print full result structure
+            self.logger.info(f"🔍 DEBUG FULL RESULT: {json.dumps(str(result), indent=2)}")
+            
+            # Extract the final message content and tool calls
             final_messages = result.get("messages", [])
             self.logger.info(f"💬 MESSAGES: Found {len(final_messages)} messages in result")
+            self.logger.info(f"💬 MESSAGES: Found {len(final_messages)} messages in result")
             
-            if final_messages:
-                last_message = final_messages[-1]
-                self.logger.info(f"📝 LAST MESSAGE: Type={type(last_message)}, Has content={hasattr(last_message, 'content')}")
+            # Track tool calls and content from messages
+            tool_calls_made = []
+            content = "No response generated"
+            
+            for i, message in enumerate(final_messages):
+                message_type = type(message).__name__
+                self.logger.info(f"📝 MESSAGE {i}: Type={message_type}")
                 
-                content = last_message.content if hasattr(last_message, 'content') else str(last_message)
-                self.logger.info(f"✅ FINAL CONTENT: '{content[:200]}{'...' if len(content) > 200 else ''}'")
-            else:
-                content = "No response generated"
-                self.logger.warning("⚠️ NO MESSAGES: Agent returned empty messages list")
+                # Extract tool calls from AIMessage objects
+                if hasattr(message, 'tool_calls') and message.tool_calls:
+                    self.logger.info(f"🔧 FOUND TOOL_CALLS in {message_type}: {message.tool_calls}")
+                    for tool_call in message.tool_calls:
+                        tool_name = tool_call.get('name', 'unknown') if isinstance(tool_call, dict) else getattr(tool_call, 'name', 'unknown')
+                        tool_args = tool_call.get('args', {}) if isinstance(tool_call, dict) else getattr(tool_call, 'args', {})
+                        tool_id = tool_call.get('id', 'unknown') if isinstance(tool_call, dict) else getattr(tool_call, 'id', 'unknown')
+                        
+                        tool_calls_made.append({
+                            "tool": tool_name,
+                            "args": tool_args,
+                            "id": tool_id,
+                            "success": True  # Assume success if we got this far
+                        })
+                        
+                        self.logger.info(f"🔧 DETECTED TOOL CALL: {tool_name} with args: {tool_args}")
+                        agent_logger.log_tool_call_result(tool_name, f"Called with args: {tool_args}", success=True)
+                
+                # Track ToolMessage responses 
+                elif message_type == 'ToolMessage':
+                    tool_content = getattr(message, 'content', '')
+                    tool_call_id = getattr(message, 'tool_call_id', 'unknown')
+                    self.logger.info(f"⚙️ TOOL RESPONSE: ID={tool_call_id}, Content='{tool_content}'")
+                
+                # Get final content from AI messages (prefer last non-empty content)
+                elif message_type == 'AIMessage' and hasattr(message, 'content'):
+                    if message.content and message.content.strip():
+                        content = message.content
+                        self.logger.info(f"💬 AI CONTENT: '{content[:100]}{'...' if len(content) > 100 else ''}'")
+                
+                # Also get content from human messages if needed
+                elif message_type == 'HumanMessage' and not content.startswith("No response"):
+                    if hasattr(message, 'content') and message.content:
+                        self.logger.info(f"👤 HUMAN INPUT: '{message.content}'")
+            
+            self.logger.info(f"🛠️ TOTAL TOOL CALLS DETECTED: {len(tool_calls_made)}")
+            for i, call in enumerate(tool_calls_made):
+                self.logger.info(f"  {i+1}. {call['tool']} (ID: {call['id']})")
+            
+            if not tool_calls_made:
+                self.logger.info("🔍 NO TOOL CALLS DETECTED: Agent responded without using tools")
+            
+            self.logger.info(f"✅ FINAL CONTENT: '{content[:200]}{'...' if len(content) > 200 else ''}'")
             
             response = AgentResponse(
                 content=content,
-                tool_calls=[],
+                tool_calls=tool_calls_made,  # Now properly extracted from message chain
                 metadata={"model": self.settings.llm.model_name}
             )
             
             self.logger.info(f"🎯 CHAT COMPLETE: Generated response with {len(content)} characters")
+            agent_logger.log_tool_call_result("langchain_agent", f"Generated response ({len(content)} chars)", success=True)
             return response
             
         except Exception as e:
             self.logger.error(f"🚨 CHAT ERROR: Agent processing failed - {str(e)}")
             self.logger.error(f"🚨 ERROR TYPE: {type(e).__name__}")
+            
+            agent_logger.log_tool_call_result("langchain_agent", f"Error: {e}", success=False, error=str(e))
             
             return AgentResponse(
                 content=f"Error: {e}",
